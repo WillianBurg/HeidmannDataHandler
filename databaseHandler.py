@@ -140,7 +140,7 @@ class Spectrum:
         if nominal: # Checks the parameter
             frequence = list()
 
-            for i, item in enumerate(self.__freq): #TODO ver se precisa do enumerate aqui
+            for item in enumerate(self.__freq):
                 frequence.append(self._mapToNominal(item)) # Search for nominal frequence correspondent
 
             return frequence
@@ -149,7 +149,7 @@ class Spectrum:
 
     @staticmethod
     def _mapToNominal(freq):
-        '''This function find the closiest one-third octave frequency band'''
+        '''This function find the closest one-third octave frequency band'''
 
         freq = float(freq)
 
@@ -257,9 +257,9 @@ class Motor():
     '''
         
     def __init__(self, motor):
-        '''Checks the parameters and store de variables'''
+        '''Checks the parameters and store the variables'''
         
-        assert motor in MotorsParameters.speedsByFan.keys(), "Motor not listed."
+        assert motor in MotorsParameters.Fanid, "Motor not listed."
         
         self.__motor = motor
 
@@ -294,7 +294,7 @@ class Motor():
         
         allSpectre = list()
         
-        for motor in MotorsParameters.speedsByFan.keys():
+        for motor in MotorsParameters.Faind:
             motorArray = Motor(motor).getArray(nominal)
             for i in motorArray:                
                 allSpectre.append(i)
@@ -302,17 +302,29 @@ class Motor():
         return allSpectre
 
 class Normal:
+    '''A class that normalizes the SPL
+    
+        motor: str
+            Motor spectrum, see MotorsParameters.speedsByFan list
+        speed : str/int 
+            Speed spectrum, see MotorParameters.speedsByFan list
+        ang : str/int
+            Angle spectrum, see MotorParameters.speedsByFan list
+        SPL : str/int
+            SPL that will be normalized
+    '''
+    
     y = 1.4
     cte = (y-1) / y
     cte_inv = cte ** -1
     
     Tamb = (59 + 459.67) * 5/9
 
-    def __init__(self, motor, speed, angle, SPL):
+    def __init__(self, motor, speed, ang, SPL):
         self.motor = motor
         self.motorI = self.motorIndex()
         self.speed = int(speed)/100 #Convert int to percentage
-        self.angle = int(angle)
+        self.ang = int(ang)
         self.SPL = int(SPL)
         #From now on it is necessary to keep the function call order
         self.N = self.calcN()
@@ -328,7 +340,7 @@ class Normal:
         return MotorsParameters.Fanid.index(self.motor)
  
     def calcN(self):
-        '''N é a frequencia de rotação do eixo(Hz)'''
+        '''N is the axle rotation frequency '''
         
         motorBPF = MotorsParameters.paramsDict["BPF"][self.motorI]
         motorB = MotorsParameters.paramsDict["B"][self.motorI]        
@@ -375,4 +387,3 @@ class Normal:
         SPL_normal = self.SPL - 20 * math.log10(self.DT/0.555) - 10 * math.log10(MFn/0.453)
         
         return SPL_normal
-
